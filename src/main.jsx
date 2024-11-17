@@ -7,12 +7,18 @@ import {
 } from "react-router-dom";
 import ContextProvider from './components/ContextProvider';
 import Root from './components/Root';
+import SignIn from './components/SignIn';
+import PrivateRoute from './components/PrivateRoute';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Root></Root>,
+    element: <PrivateRoute><Root></Root></PrivateRoute>,
   },
+  {
+    path: "/login",
+    element: <SignIn></SignIn>
+  }
 ]);
 
 createRoot(document.getElementById('root')).render(
