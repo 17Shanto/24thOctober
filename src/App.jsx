@@ -1,35 +1,114 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.js
+import React, { useState, useEffect, useRef } from 'react';
+import Peer from 'peerjs';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [peerId, setPeerId] = useState('');
+  const [connectToId, setConnectToId] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState('');
+  const [connected, setConnected] = useState(false);
+
+  const peerInstance = useRef(null);
+  const connectionRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize PeerJS and set up a peer ID
+    peerInstance.current = new Peer();
+
+    peerInstance.current.on('open', (id) => {
+      setPeerId(id);
+      console.log(`My peer ID is: ${id}`);
+    });
+
+    // Handle incoming connections
+    peerInstance.current.on('connection', (conn) => {
+      connectionRef.current = conn;
+      setConnected(true);
+      setupConnectionHandlers(conn);
+      console.log(`Connected to peer: ${conn.peer}`);
+    });
+
+    // Clean up on component unmount
+    return () => {
+      peerInstance.current.destroy();
+    };
+  }, []);
+
+  // Connect to another peer
+  const connectToPeer = () => {
+    const conn = peerInstance.current.connect(connectToId);
+    connectionRef.current = conn;
+    setupConnectionHandlers(conn);
+    setConnected(true);
+    console.log(`Attempting to connect to peer: ${connectToId}`);
+  };
+
+  // Set up event handlers for the peer connection
+  const setupConnectionHandlers = (conn) => {
+    conn.on('open', () => {
+      console.log(`Connection opened with peer: ${conn.peer}`);
+    });
+
+    conn.on('data', (data) => {
+      setMessages((prevMessages) => [...prevMessages, { sender: 'Peer', text: data }]);
+    });
+
+    conn.on('close', () => {
+      setConnected(false);
+      console.log('Connection closed');
+    });
+  };
+
+  // Send a message
+  const sendMessage = () => {
+    if (message && connectionRef.current && connectionRef.current.open) {
+      connectionRef.current.send(message);
+      setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: message }]);
+      setMessage('');  // Clear input field
+    }
+  };
 
   return (
-    <>
+    <div className="App">
+      <h1>Peer-to-Peer Chat</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <label>Your Peer ID: </label>
+        <input type="text" value={peerId} readOnly />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <div>
+        <label>Connect to Peer ID: </label>
+        <input
+          type="text"
+          value={connectToId}
+          onChange={(e) => setConnectToId(e.target.value)}
+        />
+        <button onClick={connectToPeer} disabled={connected}>Connect</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div className="">
+        {messages.map((msg, index) => (
+          <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
+            <div className="chat-header">
+              {msg.sender}
+              <time className="text-xs opacity-50"></time>
+            </div>
+            <div className="chat-bubble">{msg.text}</div>
+          </div>
+        ))}
+      </div>
+      <div className="input-box">
+        <input
+          type="text"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Type a message..."
+          disabled={!connected}
+        />
+        <button onClick={sendMessage} disabled={!connected}>Send</button>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
