@@ -1,4 +1,4 @@
-import { StrictMode } from 'react'
+import { StrictMode, useContext } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import {
@@ -9,6 +9,7 @@ import ContextProvider from './components/ContextProvider';
 import Root from './components/Root';
 import SignIn from './components/SignIn';
 import PrivateRoute from './components/PrivateRoute';
+import ProtectedHome from './components/ProtectedHome';
 
 const router = createBrowserRouter([
   {
@@ -17,7 +18,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <SignIn></SignIn>
+    element: <ProtectedHome><SignIn></SignIn></ProtectedHome>
   }
 ]);
 
