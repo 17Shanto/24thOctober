@@ -1,7 +1,8 @@
 // src/App.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Peer from 'peerjs';
 import './App.css';
+import { ContextData } from './components/ContextProvider';
 
 function App() {
   const [peerId, setPeerId] = useState('');
@@ -12,6 +13,7 @@ function App() {
 
   const peerInstance = useRef(null);
   const connectionRef = useRef(null);
+
 
   useEffect(() => {
     // Initialize PeerJS and set up a peer ID
@@ -52,7 +54,7 @@ function App() {
     });
 
     conn.on('data', (data) => {
-      setMessages((prevMessages) => [...prevMessages, { sender: 'Peer', text: data }]);
+      setMessages((prevMessages) => [...prevMessages, { sender: 'Friend', text: data }]);
     });
 
     conn.on('close', () => {
@@ -72,41 +74,50 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Peer-to-Peer Chat</h1>
-      <div>
-        <label>Your Peer ID: </label>
-        <input type="text" value={peerId} readOnly />
-      </div>
-      <div>
-        <label>Connect to Peer ID: </label>
-        <input
-          type="text"
-          value={connectToId}
-          onChange={(e) => setConnectToId(e.target.value)}
-        />
-        <button onClick={connectToPeer} disabled={connected}>Connect</button>
-      </div>
-      <div className="">
-        {messages.map((msg, index) => (
-          <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
-            <div className="chat-header">
-              {msg.sender}
-              <time className="text-xs opacity-50"></time>
+      {
+        !connected ? (
+          <div className="">
+            <h1>Peer-to-Peer Chat</h1>
+            <div>
+              <label>Your Peer ID: </label>
+              <input type="text" value={peerId} readOnly />
             </div>
-            <div className="chat-bubble">{msg.text}</div>
+            <div>
+              <label>Connect to Peer ID: </label>
+              <input
+                type="text"
+                value={connectToId}
+                onChange={(e) => setConnectToId(e.target.value)}
+              />
+              <button onClick={connectToPeer} disabled={connected}>Connect</button>
+            </div>
           </div>
-        ))}
-      </div>
-      <div className="input-box">
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-          disabled={!connected}
-        />
-        <button onClick={sendMessage} disabled={!connected}>Send</button>
-      </div>
+        ) : (
+          <div className="">
+            <div className="">
+              {messages.map((msg, index) => (
+                <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
+                  <div className="chat-header">
+                    {msg.sender}
+                    <time className="text-xs opacity-50"></time>
+                  </div>
+                  <div className="chat-bubble">{msg.text}</div>
+                </div>
+              ))}
+            </div>
+            <div className="input-box">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Type a message..."
+                disabled={!connected}
+              />
+              <button onClick={sendMessage} disabled={!connected}>Send</button>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 }
