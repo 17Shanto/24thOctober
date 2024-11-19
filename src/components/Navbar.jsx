@@ -1,16 +1,44 @@
 
 import { faFan } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ContextData } from './ContextProvider';
 const Navbar = () => {
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    // Use useEffect to update the date every second
+    useEffect(() => {
+        // Update the date every second
+        const intervalId = setInterval(() => {
+            setCurrentDate(new Date());
+        }, 1000); // 1000 ms = 1 second
+
+        // Cleanup function to clear the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
+
+    // Format the current date as "Weekday, Month Day, Year"
+    function getOrdinalSuffix(day) {
+        if (day >= 11 && day <= 13) return `${day}th`; // Special cases for 11th, 12th, 13th
+        switch (day % 10) {
+            case 1: return `${day}st`;
+            case 2: return `${day}nd`;
+            case 3: return `${day}rd`;
+            default: return `${day}th`;
+        }
+    }
+
+    const day = getOrdinalSuffix(currentDate.getDate());
+    const month = currentDate.toLocaleDateString('en-US', { month: 'long' });
+    const formattedDate = `${day} ${month}`;
+
     const { handleSignOut, user } = useContext(ContextData);
-    console.log(user.photoURL);
+
     return (
         <div>
             <div className="navbar bg-base-100">
                 <div className="flex-1">
-                    <h1 className="text-xl font-serif font-bold">24th October <FontAwesomeIcon icon={faFan} className='animate-spin' style={{ animationDuration: '3s' }} /></h1>
+                    <h1 className="text-3xl font-serif font-bold">{formattedDate} <FontAwesomeIcon icon={faFan} className='animate-spin' style={{ animationDuration: '3s' }} /></h1>
                 </div>
                 <div className="flex-none gap-2">
                     <div className="dropdown dropdown-end">
