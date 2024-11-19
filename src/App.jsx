@@ -4,12 +4,14 @@ import Peer from 'peerjs';
 import './App.css';
 import { ContextData } from './components/ContextProvider';
 
+
 function App() {
   const [peerId, setPeerId] = useState('');
   const [connectToId, setConnectToId] = useState('');
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState('');
   const [connected, setConnected] = useState(false);
+  const { user } = useContext(ContextData);
 
   const peerInstance = useRef(null);
   const connectionRef = useRef(null);
@@ -66,8 +68,12 @@ function App() {
   // Send a message
   const sendMessage = () => {
     if (message && connectionRef.current && connectionRef.current.open) {
-      connectionRef.current.send(message);
-      setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: message }]);
+      const obMsg = {
+        userName: user.displayName,
+        userText: message
+      }
+      connectionRef.current.send(obMsg);
+      setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: obMsg }]);
       setMessage('');  // Clear input field
     }
   };
@@ -98,10 +104,10 @@ function App() {
               {messages.map((msg, index) => (
                 <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
                   <div className="chat-header">
-                    {msg.sender}
+                    {msg.sender === 'You' ? msg.sender : msg.text.userName}
                     <time className="text-xs opacity-50"></time>
                   </div>
-                  <div className="chat-bubble">{msg.text}</div>
+                  <div className="chat-bubble">{msg.text.userText}</div>
                 </div>
               ))}
             </div>
