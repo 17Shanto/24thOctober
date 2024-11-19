@@ -16,6 +16,31 @@ const ChatApp = () => {
 
     const peerInstance = useRef(null);
     const connectionRef = useRef(null);
+    const chatContainerRef = useRef(null);
+
+    // Scroll to bottom whenever messages change
+    useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+
+    // Real Time
+    const [time, setTime] = useState(new Date());
+
+    // Update time every second
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            setTime(new Date());
+        }, 1000);
+
+        // Cleanup the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
+
+    // Format time as HH:MM    (Ignoring second)
+    const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 
     useEffect(() => {
@@ -71,7 +96,10 @@ const ChatApp = () => {
         if (message && connectionRef.current && connectionRef.current.open) {
             const obMsg = {
                 userName: user.displayName,
-                userText: message
+                userText: message,
+                time: formattedTime,
+                img: user.photoURL
+
             }
             connectionRef.current.send(obMsg);
             setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: obMsg }]);
@@ -79,12 +107,15 @@ const ChatApp = () => {
         }
     };
 
+
+
+
     return (
         <div className="App">
             {
                 !connected ? (
                     <div className="">
-                        <h1 className='font-serif font-semibold text-xl text-center mb-5'>Tweety Birds <FontAwesomeIcon className='text-success' icon={faTwitter} /></h1>
+
                         <div className='flex flex-col items-center gap-3'>
                             <label>Your Peer ID: </label>
                             <input className="input input-bordered input-primary w-full max-w-xs" type="text" value={peerId} readOnly />
@@ -101,15 +132,23 @@ const ChatApp = () => {
                     </div>
                 ) : (
                     <div className="">
-                        <div className="">
-                            <h1 className='font-serif font-semibold text-xl text-center mb-5'>Tweety Birds <FontAwesomeIcon className='text-success' icon={faTwitter} /></h1>
+                        <div ref={chatContainerRef} className="overflow-y-auto hide-scrollbar box-border w-64 h-96">
+
                             {messages.map((msg, index) => (
                                 <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
+                                    <div className="chat-image avatar">
+                                        <div className="w-10 rounded-full">
+                                            <img
+                                                alt="Tailwind CSS chat bubble component"
+                                                src={msg.text.img} />
+                                        </div>
+                                    </div>
                                     <div className="chat-header">
-                                        {msg.sender === 'You' ? msg.sender : msg.text.userName}
-                                        <time className="text-xs opacity-50"></time>
+                                        {msg.sender === 'You' ? msg.sender : msg.text.userName} &nbsp;
+                                        <time className="text-xs opacity-50">{msg.text.time} ago</time>
                                     </div>
                                     <div className="chat-bubble">{msg.text.userText}</div>
+                                    {msg.sender === 'You' ? <div className="chat-footer opacity-50">Seen</div> : <div className="chat-footer opacity-50">Delivered</div>}
                                 </div>
                             ))}
                         </div>
