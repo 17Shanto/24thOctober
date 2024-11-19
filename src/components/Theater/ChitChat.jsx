@@ -2,7 +2,7 @@ import { faDove } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react';
 import ChatApp from './ChatApp';
-import App from '../../App';
+
 
 const ChitChat = () => {
     return (
@@ -16,7 +16,7 @@ const ChitChat = () => {
                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
                     </form>
                     {/* <ChatApp></ChatApp> */}
-                    <App></App>
+                    <ChatApp></ChatApp>
                 </div>
             </dialog>
         </div>
