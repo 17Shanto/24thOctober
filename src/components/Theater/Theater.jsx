@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Peer from "peerjs";
+import ReactPlayer from 'react-player'
+import cinema from '../../assets/CineMaPoster.jpg'
 
 const Theater = () => {
     const [peerId, setPeerId] = useState("");
@@ -104,50 +106,62 @@ const Theater = () => {
     return (
         <div className="p-5">
             {!connected ? (
-                <div className="flex flex-col items-center gap-4">
-                    <label>Your Peer ID:</label>
-                    <textarea
-                        readOnly
-                        value={peerId}
-                        className="p-2 border rounded w-full max-w-md"
-                    />
-                    <input
-                        type="text"
-                        value={connectToId}
-                        onChange={(e) => setConnectToId(e.target.value)}
-                        placeholder="Enter friend's Peer ID"
-                        className="p-2 border rounded w-full max-w-md"
-                    />
-                    <button
-                        onClick={connectToPeer}
-                        className="bg-blue-500 text-white p-2 rounded"
-                    >
-                        Connect
-                    </button>
+                <div className="card card-side bg-base-100">
+                    <div className="card-body">
+                        <div className="flex flex-col items-center gap-4">
+                            <label>Your Theater ID:</label>
+                            <input
+                                readOnly
+                                value={peerId}
+                                className="input input-bordered input-success w-full max-w-xs"
+                            />
+                            <input
+                                type="text"
+                                value={connectToId}
+                                onChange={(e) => setConnectToId(e.target.value)}
+                                placeholder="Enter friend's Peer ID"
+                                className="input input-bordered input-warning w-full max-w-xs"
+                            />
+                            <button
+                                onClick={connectToPeer}
+                                className="btn btn-outline bg-[#800000]"
+                            >
+                                Connect
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
             ) : (
-                <div>
-                    <h2 className="text-lg font-bold mb-4">Connected to Peer</h2>
-                    <input
-                        type="file"
-                        accept="video/*"
-                        onChange={handleFileUpload}
-                        className="mb-4"
-                    />
-                    {videoSrc ? (
-                        <video
-                            ref={videoRef}
-                            controls
-                            className="w-full max-w-lg border rounded shadow-lg"
-                            onPlay={onVideoPlay}
-                            onPause={onVideoPause}
-                            onSeeked={onVideoSeek}
-                        >
-                            <source src={videoSrc} type="video/mp4" />
-                        </video>
-                    ) : (
-                        <p className="text-gray-500">Upload a video to start playing</p>
-                    )}
+                <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-start">
+                        <div className="flex justify-start gap-1">
+                            <h2 className="text-xl font-serif mb-4 text-green-600">Connected</h2>
+                            <span className="loading loading-dots text-green-600 loading-xs mb-1"></span>
+                        </div>
+
+                        {videoSrc ? (
+                            <video
+                                ref={videoRef}
+                                controls
+                                className="w-full max-w-lg border rounded shadow-lg"
+                                onPlay={onVideoPlay}
+                                onPause={onVideoPause}
+                                onSeeked={onVideoSeek}
+                            >
+                                <source src={videoSrc} type="video/mp4" />
+                            </video>
+
+                        ) : (
+                            <p className="text-gray-500">Upload a video to start playing</p>
+                        )}
+                        <input
+                            type="file"
+                            accept="video/*"
+                            onChange={handleFileUpload}
+                            className="mb-4 mt-2 rounded-md"
+                        />
+                    </div>
                 </div>
             )}
         </div>

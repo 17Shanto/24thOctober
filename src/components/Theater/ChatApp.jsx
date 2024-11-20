@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import Peer from 'peerjs';
 import { ContextData } from './../ContextProvider';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTwitter } from '@fortawesome/free-brands-svg-icons';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ChatApp = () => {
     const [peerId, setPeerId] = useState('');
@@ -25,7 +25,6 @@ const ChatApp = () => {
         }
     }, [messages]);
 
-
     // Real Time
     const [time, setTime] = useState(new Date());
 
@@ -39,9 +38,8 @@ const ChatApp = () => {
         return () => clearInterval(intervalId);
     }, []);
 
-    // Format time as HH:MM    (Ignoring second)
+    // Format time as HH:MM
     const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
 
     useEffect(() => {
         // Initialize PeerJS and set up a peer ID
@@ -83,6 +81,17 @@ const ChatApp = () => {
 
         conn.on('data', (data) => {
             setMessages((prevMessages) => [...prevMessages, { sender: 'Friend', text: data }]);
+
+            // Show toast notification
+            toast.info(`📩 New Message from ${data.userName}: ${data.userText}`, {
+                position: "top-left",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
         });
 
         conn.on('close', () => {
@@ -99,33 +108,28 @@ const ChatApp = () => {
                 userText: message,
                 time: formattedTime,
                 img: user.photoURL
-
-            }
+            };
             connectionRef.current.send(obMsg);
             setMessages((prevMessages) => [...prevMessages, { sender: 'You', text: obMsg }]);
             setMessage('');  // Clear input field
         }
     };
 
-
-
-
     return (
         <div className="App">
+            <ToastContainer /> {/* Toast notification container */}
             {
                 !connected ? (
                     <div className="">
-
                         <div className='flex flex-col items-center gap-3'>
                             <label>Your Peer ID: </label>
                             <input className="input input-bordered input-primary w-full max-w-xs" type="text" value={peerId} readOnly />
-
                             <input
                                 type="text"
                                 value={connectToId}
                                 onChange={(e) => setConnectToId(e.target.value)}
                                 className="input input-bordered input-primary w-full max-w-xs"
-                                placeholder='Paste Here Your Frinds Peer ID'
+                                placeholder='Paste Your Friend’s Peer ID'
                             />
                             <button className='btn btn-success font-serif' onClick={connectToPeer} disabled={connected}>Connect</button>
                         </div>
@@ -133,19 +137,18 @@ const ChatApp = () => {
                 ) : (
                     <div className="">
                         <div ref={chatContainerRef} className="overflow-y-auto hide-scrollbar box-border w-64 h-96">
-
                             {messages.map((msg, index) => (
                                 <div key={index} className={msg.sender === 'You' ? 'chat chat-end' : 'chat chat-start'}>
                                     <div className="chat-image avatar">
                                         <div className="w-10 rounded-full">
                                             <img
-                                                alt="Tailwind CSS chat bubble component"
+                                                alt="Avatar"
                                                 src={msg.text.img} />
                                         </div>
                                     </div>
                                     <div className="chat-header">
                                         {msg.sender === 'You' ? msg.sender : msg.text.userName} &nbsp;
-                                        <time className="text-xs opacity-50">{msg.text.time} ago</time>
+                                        <time className="text-xs opacity-50">{msg.text.time}</time>
                                     </div>
                                     <div className="chat-bubble">{msg.text.userText}</div>
                                     {msg.sender === 'You' ? <div className="chat-footer opacity-50">Seen</div> : <div className="chat-footer opacity-50">Delivered</div>}
@@ -171,4 +174,3 @@ const ChatApp = () => {
 };
 
 export default ChatApp;
-
